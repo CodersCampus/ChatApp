@@ -1,4 +1,4 @@
-# ClientWiseApp
+# CodersCampus Chat App
 
 ## Overview
 
