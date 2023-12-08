@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 
 const Register = () => {
@@ -6,8 +6,13 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const submitUserLogin = async (e) => {
     e.preventDefault();
-    const { data } = await axios.get("http://localhost:3001/test");
+    const { data } = await axios.post("http://localhost:3001/register", {
+      username,
+      password,
+    });
     console.log(data);
+    setUsername("");
+    setPassword("");
   };
   return (
     <div>
@@ -19,6 +24,7 @@ const Register = () => {
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            className="border-2 border-gray-400"
           />
         </div>
         <div>
@@ -28,9 +34,10 @@ const Register = () => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="border-2 border-gray-400"
           />
         </div>
-        <button>Register</button>
+        <button className="border-2 px-4 py-2 rounded m-2">Register</button>
       </form>
     </div>
   );
