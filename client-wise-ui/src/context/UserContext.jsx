@@ -18,7 +18,7 @@ export const UserContextProvider = ({ children }) => {
       .catch((error) => {
         console.log(error);
       });
-  });
+  }, []);
   return (
     <UserContext.Provider
       value={{
