@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Your CSS file */
+
+/* Import Roboto */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+
+/* Import Open Sans */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
+
+/* Set the font-family for your elements */
+body {
+  font-family: "Open-sans", sans-serif;
+}
+
+/* If you prefer Open Sans, you can switch the font-family */
+/* body {
+  font-family: 'Open Sans', sans-serif;
+} */
