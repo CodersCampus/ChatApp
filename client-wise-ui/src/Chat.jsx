@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "./context/UserContext";
+
 export default function Chat() {
   const { setUsername, username } = useContext(UserContext);
   const [message, setMessage] = useState("Hello world!");
@@ -36,15 +37,33 @@ export default function Chat() {
       date: "2021-09-01",
     },
   ]);
+  const [webSocket, setWebSocket] = useState(null);
+
   const [users, setUsers] = useState([
     { username: "Ben", isOnline: true },
     { username: "Jon", isOnline: true },
     { username: "Pete", isOnline: false },
     { username: "Kate", isOnline: false },
   ]);
-  useEffect(() => {
+  const makeNumber = crypto.randomUUID();
+
+  const handleMessage = () => {
+    const currentMessage = JSON.stringify({
+      chatMessage: message,
+      anothernumber: makeNumber,
+    });
+    console.log("The handleMessage message is: ", currentMessage);
+    webSocket.send(currentMessage);
     console.log("The message is: ", message);
+  };
+  useEffect(() => {
+    console.log("Created number is!!!: ", crypto.randomUUID());
+    const ws = new WebSocket("ws://localhost:3001");
+    setWebSocket(ws);
+
+    ws.addEventListener("message", handleMessage);
   }, [username, message]);
+
   const handleLogOut = (e) => {
     e.preventDefault();
     axios.post("http://localhost:3001/logout").then((res) => {
@@ -52,7 +71,10 @@ export default function Chat() {
       console.log(res);
     });
   };
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleMessage();
+  };
   return (
     <div>
       <div className="flex">
@@ -88,7 +110,7 @@ export default function Chat() {
           ))}
         </div>
       </div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
           value={message}

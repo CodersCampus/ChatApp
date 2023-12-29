@@ -17,7 +17,7 @@ const Register = () => {
       username,
       password,
     });
-    console.log("The data is: ", data);
+    console.log("The ID from server The data is: ", data);
     if (data) {
       console.log("We are in data triggered");
       setContextUsername(username);
