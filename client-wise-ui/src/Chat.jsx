@@ -93,34 +93,33 @@ export default function Chat() {
   };
   return (
     <div className="flex justify-evenly">
-      <div className="flex">
-        <div className="flex flex-col items-center">
-          <div className="overflow-scroll h-96 mb-3 ">
-            {users &&
-              users.map((user, id) => {
-                return (
-                  user && (
-                    <User
-                      user={user}
-                      id={id}
-                      key={id}
-                      isOnline={true}
-                      handleSelectedUser={handleSelectedUser}
-                      handleLogOut={handleLogOut}
-                    />
-                  )
-                );
-              })}
-          </div>
-          <button
-            className="w-[50%] bottom-0 border p-2 m-1 bg-blue-200"
-            onClick={handleLogOut}
-          >
-            Log Out
-          </button>
+      <div className="flex flex-col items-center space-y-4">
+        <div className="overflow-scroll h-96 mb-3 ">
+          {users &&
+            users.map((user, id) => {
+              return (
+                user && (
+                  <User
+                    user={user}
+                    id={id}
+                    key={id}
+                    isOnline={true}
+                    handleSelectedUser={handleSelectedUser}
+                    handleLogOut={handleLogOut}
+                  />
+                )
+              );
+            })}
         </div>
+        <button
+          className="w-[50%] bottom-0 border p-2 m-1 bg-blue-200"
+          onClick={handleLogOut}
+        >
+          Log Out
+        </button>
       </div>
-      <div>
+
+      <div className="space-y-4">
         <div className="overflow-scroll h-96 w-[300px] mb-3">
           {messages.map((message, id) => (
             <div key={id} className="border p-4 m-3">
