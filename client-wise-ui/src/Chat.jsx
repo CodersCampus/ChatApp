@@ -1,9 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "./context/UserContext";
+import User from "./User";
 
 export default function Chat() {
-  const { setUsername, username } = useContext(UserContext);
+  const { setUsername, username, id } = useContext(UserContext);
   const [message, setMessage] = useState("Hello world!");
   const [messages, setMessages] = useState([
     {
@@ -38,6 +39,7 @@ export default function Chat() {
     },
   ]);
   const [webSocket, setWebSocket] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const [users, setUsers] = useState([
     { username: "Ben", isOnline: true },
@@ -45,12 +47,19 @@ export default function Chat() {
     { username: "Pete", isOnline: false },
     { username: "Kate", isOnline: false },
   ]);
-  const makeNumber = crypto.randomUUID();
+
+  const handleSelectedUser = (id) => {
+    setSelectedUser(id);
+  };
+  console.log("Selected user is: ", selectedUser);
 
   const handleMessage = () => {
     const currentMessage = JSON.stringify({
       chatMessage: message,
-      anothernumber: makeNumber,
+      uniqueId: crypto.randomUUID(),
+      senderId: id,
+      receiverId: selectedUser,
+      date: new Date(),
     });
     console.log("The handleMessage message is: ", currentMessage);
     webSocket.send(currentMessage);
@@ -64,6 +73,13 @@ export default function Chat() {
     ws.addEventListener("message", handleMessage);
   }, [username, message]);
 
+  useEffect(() => {
+    axios.get("http://localhost:3001/users").then((res) => {
+      setUsers(res.data);
+      console.log(res.data);
+    });
+  }, []);
+
   const handleLogOut = (e) => {
     e.preventDefault();
     axios.post("http://localhost:3001/logout").then((res) => {
@@ -76,30 +92,36 @@ export default function Chat() {
     handleMessage();
   };
   return (
-    <div>
+    <div className="flex justify-evenly">
       <div className="flex">
-        <div>
-          {users.map((user, id) => {
-            return (
-              <div
-                key={id}
-                className=" flex justify-around items-center border p-4 m-5 gap-1"
-              >
-                <p>{user.username}</p>
-                <div
-                  className={
-                    user.isOnline
-                      ? "rounded-2xl bg-green-800 w-4 h-4"
-                      : "rounded-2xl bg-gray-800 w-4 h-4"
-                  }
-                >
-                  {user.isOnline}
-                </div>
-              </div>
-            );
-          })}
+        <div className="flex flex-col items-center">
+          <div className="overflow-scroll h-96 mb-3 ">
+            {users &&
+              users.map((user, id) => {
+                return (
+                  user && (
+                    <User
+                      user={user}
+                      id={id}
+                      key={id}
+                      isOnline={true}
+                      handleSelectedUser={handleSelectedUser}
+                      handleLogOut={handleLogOut}
+                    />
+                  )
+                );
+              })}
+          </div>
+          <button
+            className="w-[50%] bottom-0 border p-2 m-1 bg-blue-200"
+            onClick={handleLogOut}
+          >
+            Log Out
+          </button>
         </div>
-        <div>
+      </div>
+      <div>
+        <div className="overflow-scroll h-96 w-[300px] mb-3">
           {messages.map((message, id) => (
             <div key={id} className="border p-4 m-3">
               <p>{message.sender}</p>
@@ -109,22 +131,21 @@ export default function Chat() {
             </div>
           ))}
         </div>
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col">
+            <input
+              type="text"
+              value={message}
+              placeholder="Enter your message here..."
+              className="w-full py-2 px-4 border rounded-md focus:outline-none focus:ring focus:border-indigo-300"
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <button className="border py-4 px-2 rounded-lg" type="submit">
+              Send
+            </button>
+          </div>
+        </form>
       </div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={message}
-          placeholder="Enter your message here..."
-          className="w-full p-4 border rounded-md focus:outline-none focus:ring focus:border-indigo-300"
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <button className="border p-4 m-3" type="submit">
-          Send
-        </button>
-      </form>
-      <button className="border p-4 m-3 bg-blue-200" onClick={handleLogOut}>
-        Log Out
-      </button>
     </div>
   );
 }
