@@ -6,36 +6,52 @@ import User from "./User";
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
   const [message, setMessage] = useState("Hello world!");
+  const [isSelected, setIsSelected] = useState(false);
   const [messages, setMessages] = useState([
     {
+      uniqueId: crypto.randomUUID(),
       receiver: "Hello",
       sender: "World",
-      content: "This is messagedfds",
-      date: "2021-09-01",
+      chatMessage: "This is messagedfds",
+      creationTime: new Date(),
+      isOnline: false,
+      isSelected: false,
     },
     {
-      receiver: "Hello1",
-      sender: "World2",
-      content: "This is messagedf Ben",
-      date: "2021-09-01",
+      uniqueId: crypto.randomUUID(),
+      receiverId: "Hello1",
+      senderId: "World2",
+      chatMessage: "This is messagedf Ben",
+      creationTime: new Date(),
+      isOnline: true,
+      isSelected: false,
     },
     {
-      receiver: "Hello3",
-      sender: "World4",
-      content: "This is messagedf Jon",
-      date: "2021-09-01",
+      uniqueId: crypto.randomUUID(),
+      receiverId: "iamTrue",
+      senderId: "World4",
+      chatMessage: "This is messagedf Jon",
+      creationTime: new Date(),
+      isOnline: true,
+      isSelected: false,
     },
     {
-      receiver: "Hello33",
-      sender: "World44",
-      content: "This is messages Pete",
-      date: "2021-09-01",
+      uniqueId: crypto.randomUUID(),
+      receiverId: "Hello33",
+      senderId: "World44",
+      chatMessage: "This is messages Pete",
+      creationTime: new Date(),
+      isOnline: false,
+      isSelected: false,
     },
     {
-      receiver: "Hello32",
-      sender: "World4a",
-      content: "This is messagef Kate",
-      date: "2021-09-01",
+      uniqueId: crypto.randomUUID(),
+      receiverId: "iamTrue2",
+      senderId: "World4a",
+      chatMessage: "This is messagef Kate",
+      creationTime: new Date(),
+      isOnline: false,
+      isSelected: false,
     },
   ]);
   const [webSocket, setWebSocket] = useState(null);
@@ -49,21 +65,33 @@ export default function Chat() {
   ]);
 
   const handleSelectedUser = (id) => {
+    // setUsers(prev=>[...prev, prev.filter(user=>))])
     setSelectedUser(id);
   };
   console.log("Selected user is: ", selectedUser);
 
   const handleMessage = () => {
+    const uniqueId = crypto.randomUUID();
+    const creationTime = new Date();
     const currentMessage = JSON.stringify({
       chatMessage: message,
-      uniqueId: crypto.randomUUID(),
+      uniqueId,
       senderId: id,
       receiverId: selectedUser,
-      date: new Date(),
+      creationTime,
     });
+    const newMessage = {
+      chatMessage: message,
+      uniqueId,
+      senderId: id,
+      receiverId: selectedUser,
+      creationTime,
+    };
     console.log("The handleMessage message is: ", currentMessage);
     webSocket.send(currentMessage);
-    console.log("The message is: ", message);
+    setMessage("");
+
+    setMessages((prev) => [...prev, newMessage]);
   };
   useEffect(() => {
     console.log("Created number is!!!: ", crypto.randomUUID());
@@ -75,7 +103,7 @@ export default function Chat() {
 
   useEffect(() => {
     axios.get("http://localhost:3001/users").then((res) => {
-      setUsers(res.data);
+      setUsers((prev) => [...prev, res.data]);
       console.log(res.data);
     });
   }, []);
@@ -91,6 +119,8 @@ export default function Chat() {
     e.preventDefault();
     handleMessage();
   };
+  console.log("new messages: ", messages);
+  console.log("select", selectedUser);
   return (
     <div className="flex justify-evenly">
       <div className="flex flex-col items-center space-y-4">
@@ -101,11 +131,15 @@ export default function Chat() {
                 user && (
                   <User
                     user={user}
+                    users={users}
                     id={id}
                     key={id}
                     isOnline={true}
                     handleSelectedUser={handleSelectedUser}
                     handleLogOut={handleLogOut}
+                    selectedUser={selectedUser}
+                    setIsSelected={setIsSelected}
+                    isSelected={isSelected}
                   />
                 )
               );
@@ -123,10 +157,11 @@ export default function Chat() {
         <div className="overflow-scroll h-96 w-[300px] mb-3">
           {messages.map((message, id) => (
             <div key={id} className="border p-4 m-3">
-              <p>{message.sender}</p>
-              <p>{message.receiver}</p>
-              <p>{message.content}</p>
-              <p>{message.date}</p>
+              <p>{message.senderId}</p>
+              <p>{message.receiverId}</p>
+              <p>{message.chatMessage}</p>
+              <p>{message.uniqueId}</p>
+              <p>{message.creationTime.toString()}</p>
             </div>
           ))}
         </div>
@@ -138,8 +173,13 @@ export default function Chat() {
               placeholder="Enter your message here..."
               className="w-full py-2 px-4 border rounded-md focus:outline-none focus:ring focus:border-indigo-300"
               onChange={(e) => setMessage(e.target.value)}
+              disabled={!selectedUser}
             />
-            <button className="border py-4 px-2 rounded-lg" type="submit">
+            <button
+              className="border py-4 px-2 rounded-lg"
+              type="submit"
+              disabled={!selectedUser}
+            >
               Send
             </button>
           </div>

@@ -1,9 +1,24 @@
-const User = ({ id, user, isOnline, handleSelectedUser, handleLogOut }) => {
+const User = ({
+  id,
+  user,
+  isOnline,
+  handleSelectedUser,
+  handleLogOut,
+  users,
+  selectedUser,
+  isSelected,
+  setIsSelected,
+}) => {
+  // console.log(typeof users, users);
+
   return (
     <div
       key={id}
-      className=" flex justify-around items-center border p-4 m-5 gap-1"
-      onClick={() => handleSelectedUser(id)}
+      className="flex justify-around items-center border p-4 m-5 gap-1"
+      onClick={() => handleSelectedUser(user._id)}
+      style={{
+        border: isSelected && selectedUser == id ? "1px solid red" : "",
+      }}
     >
       <p>{user.username}</p>
       <div
