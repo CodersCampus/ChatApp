@@ -7,53 +7,7 @@ export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
   const [message, setMessage] = useState("Hello world!");
   const [isSelected, setIsSelected] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      uniqueId: crypto.randomUUID(),
-      receiver: "Hello",
-      sender: "World",
-      chatMessage: "This is messagedfds",
-      creationTime: new Date(),
-      isOnline: false,
-      isSelected: false,
-    },
-    {
-      uniqueId: crypto.randomUUID(),
-      receiverId: "Hello1",
-      senderId: "World2",
-      chatMessage: "This is messagedf Ben",
-      creationTime: new Date(),
-      isOnline: true,
-      isSelected: false,
-    },
-    {
-      uniqueId: crypto.randomUUID(),
-      receiverId: "iamTrue",
-      senderId: "World4",
-      chatMessage: "This is messagedf Jon",
-      creationTime: new Date(),
-      isOnline: true,
-      isSelected: false,
-    },
-    {
-      uniqueId: crypto.randomUUID(),
-      receiverId: "Hello33",
-      senderId: "World44",
-      chatMessage: "This is messages Pete",
-      creationTime: new Date(),
-      isOnline: false,
-      isSelected: false,
-    },
-    {
-      uniqueId: crypto.randomUUID(),
-      receiverId: "iamTrue2",
-      senderId: "World4a",
-      chatMessage: "This is messagef Kate",
-      creationTime: new Date(),
-      isOnline: false,
-      isSelected: false,
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [webSocket, setWebSocket] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -63,6 +17,37 @@ export default function Chat() {
     { username: "Pete", isOnline: false },
     { username: "Kate", isOnline: false },
   ]);
+
+  useEffect(() => {
+    console.log("Created number is!!!: ", crypto.randomUUID());
+    const ws = new WebSocket("ws://localhost:3001");
+    setWebSocket(ws);
+
+    ws.addEventListener("message", handleMessage);
+  }, [username, message]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      axios
+        .get("http://localhost:3001/messages/" + selectedUser)
+        .then((res) => {
+          const { data } = res;
+          const { message } = data;
+          setMessages(data);
+          console.log("res is: ", res.data);
+          console.log("res is message: ", message);
+        });
+    } else {
+      console.log("No selected user");
+    }
+  }, [selectedUser]);
+
+  useEffect(() => {
+    axios.get("/users").then((res) => {
+      setUsers(res.data);
+      console.log(res.data);
+    });
+  }, []);
 
   const handleSelectedUser = (id) => {
     // setUsers(prev=>[...prev, prev.filter(user=>))])
@@ -93,20 +78,6 @@ export default function Chat() {
 
     setMessages((prev) => [...prev, newMessage]);
   };
-  useEffect(() => {
-    console.log("Created number is!!!: ", crypto.randomUUID());
-    const ws = new WebSocket("ws://localhost:3001");
-    setWebSocket(ws);
-
-    ws.addEventListener("message", handleMessage);
-  }, [username, message]);
-
-  useEffect(() => {
-    axios.get("http://localhost:3001/users").then((res) => {
-      setUsers((prev) => [...prev, res.data]);
-      console.log(res.data);
-    });
-  }, []);
 
   const handleLogOut = (e) => {
     e.preventDefault();
@@ -145,6 +116,7 @@ export default function Chat() {
               );
             })}
         </div>
+        <span>{username}</span>
         <button
           className="w-[50%] bottom-0 border p-2 m-1 bg-blue-200"
           onClick={handleLogOut}
