@@ -1,7 +1,7 @@
-import { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { UserContext } from "./context/UserContext";
+import { useContext, useEffect, useState } from "react";
 import User from "./User";
+import { UserContext } from "./context/UserContext";
 
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
@@ -31,12 +31,12 @@ export default function Chat() {
       axios
         .get("http://localhost:3001/messages/" + selectedUser)
         .then((res) => {
-          const { data } = res;
-          const { message } = data;
-          setMessages(data);
-          console.log("res is: ", res.data);
-          console.log("res is message: ", message);
-        });
+        const messagesFromDb = res.data;
+        console.log(messagesFromDb)
+          if(messagesFromDb){
+            setMessages(messagesFromDb);
+          }
+        }).catch(err => console.log(err));
     } else {
       console.log("No selected user");
     }
@@ -127,7 +127,7 @@ export default function Chat() {
 
       <div className="space-y-4">
         <div className="overflow-scroll h-96 w-[300px] mb-3">
-          {messages.map((message, id) => (
+          {messages?.map((message, id) => (
             <div key={id} className="border p-4 m-3">
               <p>{message.senderId}</p>
               <p>{message.receiverId}</p>
