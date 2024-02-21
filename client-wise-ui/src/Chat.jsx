@@ -5,7 +5,7 @@ import { UserContext } from "./context/UserContext";
 
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
-  const [message, setMessage] = useState("Hello world!");
+  const [message, setMessage] = useState("");
   const [isSelected, setIsSelected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [webSocket, setWebSocket] = useState(null);
@@ -19,24 +19,34 @@ export default function Chat() {
   ]);
 
   useEffect(() => {
-    console.log("Created number is!!!: ", crypto.randomUUID());
+    initWebSocket();
+  }, [selectedUser]);
+
+  function initWebSocket() {
     const ws = new WebSocket("ws://localhost:3001");
     setWebSocket(ws);
 
     ws.addEventListener("message", handleMessage);
-  }, [username, message]);
-
+    ws.addEventListener("close", () => {
+      console.log("Connection lost");
+      setTimeout(() => {
+        console.log("Connection is lost. Reconnecting..");
+        initWebSocket();
+      }, 1000);
+    });
+  }
   useEffect(() => {
     if (selectedUser) {
       axios
         .get("http://localhost:3001/messages/" + selectedUser)
         .then((res) => {
-        const messagesFromDb = res.data;
-        console.log(messagesFromDb)
-          if(messagesFromDb){
+          const messagesFromDb = res.data;
+          console.log(messagesFromDb);
+          if (messagesFromDb) {
             setMessages(messagesFromDb);
           }
-        }).catch(err => console.log(err));
+        })
+        .catch((err) => console.log(err));
     } else {
       console.log("No selected user");
     }
@@ -45,7 +55,6 @@ export default function Chat() {
   useEffect(() => {
     axios.get("/users").then((res) => {
       setUsers(res.data);
-      console.log(res.data);
     });
   }, []);
 
@@ -55,28 +64,26 @@ export default function Chat() {
   };
   console.log("Selected user is: ", selectedUser);
 
-  const handleMessage = () => {
-    const uniqueId = crypto.randomUUID();
-    const creationTime = new Date();
-    const currentMessage = JSON.stringify({
-      chatMessage: message,
-      uniqueId,
-      senderId: id,
-      receiverId: selectedUser,
-      creationTime,
-    });
-    const newMessage = {
-      chatMessage: message,
-      uniqueId,
-      senderId: id,
-      receiverId: selectedUser,
-      creationTime,
-    };
-    console.log("The handleMessage message is: ", currentMessage);
-    webSocket.send(currentMessage);
-    setMessage("");
+  const handleMessage = (e) => {
+    console.log("Incoming messages: ", e);
 
-    setMessages((prev) => [...prev, newMessage]);
+    const uniqueId = crypto.randomUUID();
+    const createdAt = new Date();
+    const currentMessage = {
+      message: message,
+      uniqueId,
+      sender: id,
+      recipient: selectedUser,
+      createdAt,
+    };
+    if (message !== "" && currentMessage.message !== "") {
+      webSocket.send(JSON.stringify(currentMessage));
+      setMessage(currentMessage);
+      setMessages((prev) => [...prev, currentMessage]);
+    } else {
+      setMessages((prev) => [...prev, JSON.parse(e.data)]);
+    }
+    setMessage("");
   };
 
   const handleLogOut = (e) => {
@@ -90,8 +97,7 @@ export default function Chat() {
     e.preventDefault();
     handleMessage();
   };
-  console.log("new messages: ", messages);
-  console.log("select", selectedUser);
+
   return (
     <div className="flex justify-evenly">
       <div className="flex flex-col items-center space-y-4">
@@ -127,14 +133,17 @@ export default function Chat() {
 
       <div className="space-y-4">
         <div className="overflow-scroll h-96 w-[300px] mb-3">
-          {messages?.map((message, id) => (
-            <div key={id} className="border p-4 m-3">
-              <p>{message.senderId}</p>
-              <p>{message.receiverId}</p>
-              <p>{message.chatMessage}</p>
-              <p>{message.uniqueId}</p>
-              <p>{message.creationTime.toString()}</p>
-            </div>
+          {messages?.map((incomingMessage, id) => (
+            <>
+              {incomingMessage.message !== "" && (
+                <div key={id} className="border p-4 m-3">
+                  <p>{incomingMessage?.sender}</p>
+                  <p>{incomingMessage?.recipient}</p>
+                  <p>{incomingMessage?.message}</p>
+                  {/* <p>{new Date(message.createdAt)}</p> */}
+                </div>
+              )}
+            </>
           ))}
         </div>
         <form onSubmit={handleSubmit}>
