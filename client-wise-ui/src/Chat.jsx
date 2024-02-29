@@ -1,16 +1,19 @@
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import User from "./User";
 import { UserContext } from "./context/UserContext";
 
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
+
   const [message, setMessage] = useState("");
   const [isSelected, setIsSelected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [webSocket, setWebSocket] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-
+  const [selectedUser, setSelectedUser] = useState("");
+  const uniqueMessages = useMemo(() => {
+    return [...new Set(messages.map(JSON.stringify))].map(JSON.parse);
+  }, [messages]);
   const [users, setUsers] = useState([
     { username: "Ben", isOnline: true },
     { username: "Jon", isOnline: true },
@@ -19,26 +22,40 @@ export default function Chat() {
   ]);
 
   useEffect(() => {
-    initWebSocket();
+    if (selectedUser && selectedUser.trim() !== "") {
+      initWebSocket();
+    }
+    return () => {
+      if (webSocket) {
+        webSocket.removeEventListener("message", handleMessage);
+        webSocket.removeEventListener("close", handleWebSocketClose);
+        webSocket.close();
+      }
+    };
   }, [selectedUser]);
 
-  function initWebSocket() {
-    const ws = new WebSocket("ws://localhost:3001");
-    setWebSocket(ws);
+  function handleWebSocketClose() {
+    console.log("Connection lost");
+    setTimeout(() => {
+      console.log("Connection is lost. Reconnecting..");
+      initWebSocket();
+    }, 1000);
+  }
 
-    ws.addEventListener("message", handleMessage);
-    ws.addEventListener("close", () => {
-      console.log("Connection lost");
-      setTimeout(() => {
-        console.log("Connection is lost. Reconnecting..");
-        initWebSocket();
-      }, 1000);
-    });
+  function initWebSocket() {
+    if (!webSocket) {
+      console.log("Creating a new WebSocket connection...");
+      const ws = new WebSocket("ws://localhost:8080/websocket");
+      setWebSocket(ws);
+      ws.addEventListener("message", handleMessage);
+      ws.addEventListener("close", handleWebSocketClose);
+    }
   }
   useEffect(() => {
+    console.log("SelectedUser");
     if (selectedUser) {
       axios
-        .get("http://localhost:3001/messages/" + selectedUser)
+        .get("http://localhost:8080/messages/" + selectedUser)
         .then((res) => {
           const messagesFromDb = res.data;
           console.log(messagesFromDb);
@@ -59,14 +76,16 @@ export default function Chat() {
   }, []);
 
   const handleSelectedUser = (id) => {
-    // setUsers(prev=>[...prev, prev.filter(user=>))])
+    setMessages([]);
     setSelectedUser(id);
   };
-  console.log("Selected user is: ", selectedUser);
 
   const handleMessage = (e) => {
-    console.log("Incoming messages: ", e);
-
+    if (e) {
+      const data = JSON.parse(e.data);
+      setMessages((prev) => [...prev, JSON.parse(e.data)]);
+      console.log(data);
+    }
     const uniqueId = crypto.randomUUID();
     const createdAt = new Date();
     const currentMessage = {
@@ -78,10 +97,8 @@ export default function Chat() {
     };
     if (message !== "" && currentMessage.message !== "") {
       webSocket.send(JSON.stringify(currentMessage));
-      setMessage(currentMessage);
-      setMessages((prev) => [...prev, currentMessage]);
-    } else {
-      setMessages((prev) => [...prev, JSON.parse(e.data)]);
+      // setMessage(currentMessage);
+      // setMessages((prev) => [...prev, currentMessage]);
     }
     setMessage("");
   };
@@ -90,7 +107,6 @@ export default function Chat() {
     e.preventDefault();
     axios.post("http://localhost:3001/logout").then((res) => {
       setUsername("");
-      console.log(res);
     });
   };
   const handleSubmit = (e) => {
@@ -99,9 +115,9 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex justify-evenly">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="overflow-scroll h-96 mb-3 ">
+    <div className="flex">
+      <div className="flex flex-col items-center mr-20 justify-between space-y-6">
+        <div className="overflow-scroll h-96 mb-3 w-[175%]  ">
           {users &&
             users.map((user, id) => {
               return (
@@ -133,18 +149,23 @@ export default function Chat() {
 
       <div className="space-y-4">
         <div className="overflow-scroll h-96 w-[300px] mb-3">
-          {messages?.map((incomingMessage, id) => (
-            <>
-              {incomingMessage.message !== "" && (
-                <div key={id} className="border p-4 m-3">
-                  <p>{incomingMessage?.sender}</p>
-                  <p>{incomingMessage?.recipient}</p>
-                  <p>{incomingMessage?.message}</p>
-                  {/* <p>{new Date(message.createdAt)}</p> */}
-                </div>
-              )}
-            </>
-          ))}
+          {!!selectedUser &&
+            [...uniqueMessages]?.map((incomingMessage, id) => (
+              <div key={id}>
+                {incomingMessage.message !== "" && (
+                  <div className="border p-4 m-3">
+                    <p>
+                      {incomingMessage?.sender == selectedUser
+                        ? "Other Party"
+                        : username}
+                    </p>
+
+                    <p>{incomingMessage?.message}</p>
+                    {/* <p>{new Date(message.createdAt)}</p> */}
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col">

@@ -3,19 +3,14 @@ const User = ({
   user,
   isOnline,
   handleSelectedUser,
-  handleLogOut,
-  users,
   selectedUser,
   isSelected,
-  setIsSelected,
 }) => {
-  // console.log(typeof users, users);
-
   return (
     <div
       key={id}
       className="flex justify-around items-center border p-4 m-5 gap-1"
-      onClick={() => handleSelectedUser(user._id)}
+      onClick={() => handleSelectedUser(user.id)}
       style={{
         border: isSelected && selectedUser == id ? "1px solid red" : "",
       }}
@@ -23,12 +18,12 @@ const User = ({
       <p>{user.username}</p>
       <div
         className={
-          user.isOnline
+          isOnline
             ? "rounded-2xl bg-green-800 w-4 h-4"
             : "rounded-2xl bg-gray-800 w-4 h-4"
         }
       >
-        {user.isOnline}
+        {/* {user.isOnline} */}
       </div>
     </div>
   );

@@ -11,19 +11,16 @@ const Register = () => {
     e.preventDefault();
     let url =
       isRegisterOrLogin === "register"
-        ? `http://localhost:3001/register`
-        : "http://localhost:3001/login";
+        ? `http://localhost:8080/auth/signup`
+        : "http://localhost:8080/auth/signin";
     const { data } = await axios.post(url, {
       username,
       password,
     });
-    console.log("The ID from server The data is: ", data);
     if (data) {
-      console.log("We are in data triggered");
       setContextUsername(username);
       setId(data._id);
     }
-    console.log(data);
     setUsername("");
     setPassword("");
   };

@@ -11,10 +11,8 @@ export const UserContextProvider = ({ children }) => {
     axios
       .get("http://localhost:3001/account")
       .then(({ data }) => {
-        console.log(data);
         setUsername(data.username);
         setId(data.userId);
-        console.log("The useEffect data is: ", data);
       }, [])
       .catch((error) => {
         console.log(error);
