@@ -7,6 +7,7 @@ import { IoMdLogOut } from "react-icons/io";
 import { MdOutlineOnlinePrediction } from "react-icons/md";
 import { IoCloudOfflineSharp } from "react-icons/io5";
 import { FcExpired } from "react-icons/fc";
+
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
   const [isConnected, setIsConnected] = useState(false);
@@ -15,6 +16,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [webSocket, setWebSocket] = useState(null);
   const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUsername, setSelectedUsername] = useState("");
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false); // State for loading messages
   const uniqueMessages = useMemo(() => {
@@ -89,6 +91,9 @@ export default function Chat() {
   }, []);
 
   const handleSelectedUser = (userId) => {
+    const selectedUserN = users.filter((user) => user.id === userId)[0]
+      ?.username;
+    setSelectedUsername(selectedUserN);
     setIsSelected(true);
     setMessages([]);
     setSelectedUser(userId);
@@ -126,7 +131,8 @@ export default function Chat() {
       .finally(() => {
         localStorage.removeItem("token");
         localStorage.removeItem("id");
-        localStorage.removeItem("username");
+        // localStorage.removeItem("username");
+        location.href = "/signin";
       });
   };
 
@@ -137,7 +143,7 @@ export default function Chat() {
   return (
     <div className="flex flex-col md:flex-row h-screen">
       <div className="flex flex-col items-center flex-shrink-0 bg-slate-50 md:w-1/4 md:h-screen overflow-y-auto rounded-md shadow-lg">
-        <div className="overflow-auto flex-grow w-full">
+        <div className="overflow-auto  w-full">
           {users &&
             users.map((user, id) => (
               <User
@@ -173,20 +179,20 @@ export default function Chat() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center p-4">
+        <div className="flex justify-between gap-2 items-center p-4">
           <span className="text-xl">{username}</span>
           <button
             onClick={handleLogOut}
             className="text-gray-500 hover:text-gray-700 focus:outline-none"
           >
-            <IoMdLogOut size={25} />
+            <IoMdLogOut size={25} color="black" />
           </button>
         </div>
       </div>
 
       <div className="flex flex-col w-full md:w-3/4 bg-white">
         <div
-          className={`overflow-scroll flex-grow p-4 relative ${
+          className={`overflow-scroll h-[85%] p-4 relative ${
             loadingMessages ? "opacity-50" : ""
           }`}
         >
@@ -203,7 +209,7 @@ export default function Chat() {
                   >
                     <p className="text-sm font-semibold">
                       {incomingMessage.sender === selectedUser
-                        ? "Other Party"
+                        ? selectedUsername
                         : username}
                     </p>
                     <p className="text-base">{incomingMessage.message}</p>

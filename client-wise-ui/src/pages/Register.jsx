@@ -18,6 +18,7 @@ const Register = () => {
       password,
     });
     if (data) {
+      console.log(data);
       localStorage.setItem("token", data.jwt);
       localStorage.setItem("username", JSON.stringify(username));
       localStorage.setItem("id", JSON.stringify(data._id));
