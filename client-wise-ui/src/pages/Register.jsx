@@ -18,6 +18,7 @@ const Register = () => {
       password,
     });
     if (data) {
+      localStorage.setItem("token", data.jwt);
       setContextUsername(username);
       setId(data._id);
     }

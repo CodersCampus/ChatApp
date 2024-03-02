@@ -7,7 +7,14 @@ export const UserContextProvider = ({ children }) => {
   const [username, setUsername] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [id, setId] = useState(null);
+
+  const [token, setToken] = useState("");
   useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("token");
+    console.log("tokenFromLocalStorage : " + tokenFromLocalStorage);
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    }
     axios
       .get("http://localhost:3001/account")
       .then(({ data }) => {
@@ -25,6 +32,7 @@ export const UserContextProvider = ({ children }) => {
         setUsername,
         id,
         setId,
+        token,
       }}
     >
       {children}

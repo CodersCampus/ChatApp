@@ -4,8 +4,9 @@ import Register from "./pages/Register";
 import Chat from "./Chat";
 
 export const Routes = () => {
-  const { username } = useContext(UserContext);
-  if (username) {
+  const { username, token } = useContext(UserContext);
+  console.log("Username from userContext: " + username);
+  if (username || token) {
     return <Chat />;
   }
   return <Register />;

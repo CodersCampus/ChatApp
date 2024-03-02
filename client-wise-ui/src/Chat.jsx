@@ -11,9 +11,11 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [webSocket, setWebSocket] = useState(null);
   const [selectedUser, setSelectedUser] = useState("");
+
   const uniqueMessages = useMemo(() => {
     return [...new Set(messages.map(JSON.stringify))].map(JSON.parse);
   }, [messages]);
+
   const [users, setUsers] = useState([
     { username: "Ben", isOnline: true },
     { username: "Jon", isOnline: true },
@@ -76,6 +78,7 @@ export default function Chat() {
   }, []);
 
   const handleSelectedUser = (id) => {
+    setIsSelected(true);
     setMessages([]);
     setSelectedUser(id);
   };
