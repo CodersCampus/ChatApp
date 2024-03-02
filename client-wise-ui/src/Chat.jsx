@@ -6,7 +6,7 @@ import { IoIosSend } from "react-icons/io";
 import { IoMdLogOut } from "react-icons/io";
 import { MdOutlineOnlinePrediction } from "react-icons/md";
 import { IoCloudOfflineSharp } from "react-icons/io5";
-
+import { FcExpired } from "react-icons/fc";
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
   const [isConnected, setIsConnected] = useState(false);
@@ -15,6 +15,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [webSocket, setWebSocket] = useState(null);
   const [selectedUser, setSelectedUser] = useState("");
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false); // State for loading messages
   const uniqueMessages = useMemo(() => {
     return [...new Set(messages.map(JSON.stringify))].map(JSON.parse);
@@ -72,7 +73,10 @@ export default function Chat() {
             setLoadingMessages(false);
           }
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          setIsSessionExpired(true);
+          console.log(err);
+        });
     } else {
       console.log("No selected user");
     }
@@ -114,9 +118,16 @@ export default function Chat() {
 
   const handleLogOut = (e) => {
     e.preventDefault();
-    axios.post("http://localhost:3001/logout").then((res) => {
-      setUsername("");
-    });
+    axios
+      .post("http://localhost:8080/auth/logout")
+      .then((res) => {
+        setUsername("");
+      })
+      .finally(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("id");
+        localStorage.removeItem("username");
+      });
   };
 
   const handleSubmit = (e) => {
@@ -143,15 +154,23 @@ export default function Chat() {
               />
             ))}
         </div>
-        <div className="flex justify-evenly gap-4 items-center font-semibold italic">
-          <span>Connection</span>
-          <span>
-            {isConnected ? (
-              <MdOutlineOnlinePrediction size={30} color="green" />
-            ) : (
-              <IoCloudOfflineSharp size={30} color="red" />
-            )}
-          </span>
+        <div className="flex flex-col justify-evenly gap-4 font-serif items-center font-semibold italic">
+          {isSessionExpired && (
+            <div className="flex items-center justify-around gap-4">
+              <span>Session Expired</span>
+              <span>{isSessionExpired && <FcExpired size={25} />}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-center gap-4">
+            <span>Connection</span>
+            <span>
+              {isConnected ? (
+                <MdOutlineOnlinePrediction size={30} color="green" />
+              ) : (
+                <IoCloudOfflineSharp size={30} color="red" />
+              )}
+            </span>
+          </div>
         </div>
 
         <div className="flex justify-between items-center p-4">
