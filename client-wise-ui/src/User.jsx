@@ -28,7 +28,9 @@ const User = ({
         {user.username}
       </p>
       <div
-        className={`rounded-full bg-${isOnline ? "green" : "gray"}-500 w-2 h-2`}
+        className={`rounded-full bg-${
+          isOnline ? "green-600" : "gray-500"
+        } w-2 h-2`}
       />
     </div>
   );

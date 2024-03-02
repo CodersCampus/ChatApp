@@ -4,10 +4,12 @@ import User from "./User";
 import { UserContext } from "./context/UserContext";
 import { IoIosSend } from "react-icons/io";
 import { IoMdLogOut } from "react-icons/io";
+import { MdOutlineOnlinePrediction } from "react-icons/md";
+import { IoCloudOfflineSharp } from "react-icons/io5";
 
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
-
+  const [isConnected, setIsConnected] = useState(false);
   const [message, setMessage] = useState("");
   const [isSelected, setIsSelected] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -36,6 +38,7 @@ export default function Chat() {
 
   function handleWebSocketClose() {
     console.log("Connection lost");
+    setIsConnected(false);
     setTimeout(() => {
       console.log("Connection is lost. Reconnecting..");
       initWebSocket();
@@ -46,6 +49,7 @@ export default function Chat() {
     if (!webSocket) {
       console.log("Creating a new WebSocket connection...");
       const ws = new WebSocket("ws://localhost:8080/websocket");
+      setIsConnected(true);
       setWebSocket(ws);
       ws.addEventListener("message", handleMessage);
       ws.addEventListener("close", handleWebSocketClose);
@@ -65,12 +69,10 @@ export default function Chat() {
           console.log(messagesFromDb);
           if (messagesFromDb) {
             setMessages(messagesFromDb);
+            setLoadingMessages(false);
           }
         })
-        .catch((err) => console.log(err))
-        .finally(() => {
-          setLoadingMessages(false);
-        });
+        .catch((err) => console.log(err));
     } else {
       console.log("No selected user");
     }
@@ -141,6 +143,17 @@ export default function Chat() {
               />
             ))}
         </div>
+        <div className="flex justify-evenly gap-4 items-center font-semibold italic">
+          <span>Connection</span>
+          <span>
+            {isConnected ? (
+              <MdOutlineOnlinePrediction size={30} color="green" />
+            ) : (
+              <IoCloudOfflineSharp size={30} color="red" />
+            )}
+          </span>
+        </div>
+
         <div className="flex justify-between items-center p-4">
           <span className="text-xl">{username}</span>
           <button
@@ -158,15 +171,8 @@ export default function Chat() {
             loadingMessages ? "opacity-50" : ""
           }`}
         >
-          {loadingMessages ? (
-            <div className="absolute top-0 left-0 w-full h-full bg-white opacity-50 flex justify-center items-center">
-              <div className="spinner-border text-blue-500" role="status">
-                <span className="sr-only">Loading...</span>
-              </div>
-            </div>
-          ) : (
-            !!selectedUser &&
-            uniqueMessages.map((incomingMessage, id) => (
+          {!!selectedUser &&
+            uniqueMessages?.map((incomingMessage, id) => (
               <div key={id}>
                 {incomingMessage.message && (
                   <div
@@ -186,8 +192,7 @@ export default function Chat() {
                   </div>
                 )}
               </div>
-            ))
-          )}
+            ))}
         </div>
         <form onSubmit={handleSubmit} className="p-4">
           <div className="flex gap-2">
