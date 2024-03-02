@@ -9,7 +9,9 @@ const User = ({
   return (
     <div
       key={id}
-      className="flex justify-around items-center rounded-lg shadow-inner shadow-slate-200 border p-4 m-5 gap-1"
+      className={`flex justify-between bg-white hover:opacity-40 items-center rounded-lg shadow-md border p-4 m-5 gap-4 cursor-pointer transition-transform duration-300 ${
+        isSelected && selectedUser === user.id ? "scale-105 shadow-lg" : ""
+      }`}
       onClick={() => handleSelectedUser(user.id)}
       style={{
         boxShadow:
@@ -18,16 +20,16 @@ const User = ({
             : "",
       }}
     >
-      <p>{user.username}</p>
-      <div
-        className={
-          isOnline
-            ? "rounded-2xl bg-green-800 w-4 h-4"
-            : "rounded-2xl bg-gray-800 w-4 h-4"
-        }
+      <p
+        className={`${
+          isSelected && selectedUser === user.id ? "font-bold" : ""
+        }`}
       >
-        {/* {user.isOnline} */}
-      </div>
+        {user.username}
+      </p>
+      <div
+        className={`rounded-full bg-${isOnline ? "green" : "gray"}-500 w-2 h-2`}
+      />
     </div>
   );
 };

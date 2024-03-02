@@ -19,7 +19,10 @@ const Register = () => {
     });
     if (data) {
       localStorage.setItem("token", data.jwt);
+      localStorage.setItem("username", JSON.stringify(username));
+      localStorage.setItem("id", JSON.stringify(data._id));
       setContextUsername(username);
+
       setId(data._id);
     }
     setUsername("");
