@@ -18,7 +18,8 @@ export default function Chat() {
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedUsername, setSelectedUsername] = useState("");
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const [loadingMessages, setLoadingMessages] = useState(false); // State for loading messages
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
   const uniqueMessages = useMemo(() => {
     return [...new Set(messages.map(JSON.stringify))].map(JSON.parse);
   }, [messages]);
@@ -27,7 +28,6 @@ export default function Chat() {
 
   useEffect(() => {
     if (selectedUser && selectedUser.trim() !== "") {
-      // setLoadingMessages(true); // Set loading to true when fetching messages
       initWebSocket();
     }
     return () => {
@@ -60,10 +60,8 @@ export default function Chat() {
   }
 
   useEffect(() => {
-    console.log("SelectedUser");
     if (selectedUser) {
-      setLoadingMessages(true); // Set loading to true when messages are being fetched
-      // Simulate loading time with setTimeout
+      setLoadingMessages(true);
 
       axios
         .get("http://localhost:8080/messages/" + selectedUser)
@@ -115,8 +113,6 @@ export default function Chat() {
     };
     if (message !== "" && currentMessage.message !== "") {
       webSocket.send(JSON.stringify(currentMessage));
-      // setMessage(currentMessage);
-      // setMessages((prev) => [...prev, currentMessage]);
     }
     setMessage("");
   };
