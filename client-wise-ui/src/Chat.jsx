@@ -7,6 +7,7 @@ import { IoMdLogOut } from "react-icons/io";
 import { MdOutlineOnlinePrediction } from "react-icons/md";
 import { IoCloudOfflineSharp } from "react-icons/io5";
 import { FcExpired } from "react-icons/fc";
+import { getTimeAndDate } from "./utils";
 
 export default function Chat() {
   const { setUsername, username, id } = useContext(UserContext);
@@ -91,6 +92,7 @@ export default function Chat() {
   const handleSelectedUser = (userId) => {
     const selectedUserN = users.filter((user) => user.id === userId)[0]
       ?.username;
+    console.log(selectedUser);
     setSelectedUsername(selectedUserN);
     setIsSelected(true);
     setMessages([]);
@@ -197,19 +199,23 @@ export default function Chat() {
               <div key={id}>
                 {incomingMessage.message && (
                   <div
-                    className={`p-4 m-3 rounded-lg shadow-md ${
+                    className={`flex  justify-between p-4 m-3 rounded-lg shadow-md ${
                       incomingMessage.sender === selectedUser
                         ? "bg-blue-100 text-blue-900 self-end"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    <p className="text-sm font-semibold">
-                      {incomingMessage.sender === selectedUser
-                        ? selectedUsername
-                        : username}
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {incomingMessage.sender === selectedUser
+                          ? selectedUsername
+                          : username}
+                      </p>
+                      <p className="text-base">{incomingMessage.message}</p>
+                    </div>
+                    <p className="text-xs italic">
+                      {getTimeAndDate(incomingMessage.createdAt)}
                     </p>
-                    <p className="text-base">{incomingMessage.message}</p>
-                    {/* <p>{new Date(message.createdAt)}</p> */}
                   </div>
                 )}
               </div>
