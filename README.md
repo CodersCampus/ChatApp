@@ -41,8 +41,16 @@ cd ClientWiseApp
 # Install dependencies
 yarn install
 
+OR
+
+npm install
+
 # Run the app
 yarn dev
+
+OR
+
+npm run dev
 ```
 
 ### Dependencies (Versions)
