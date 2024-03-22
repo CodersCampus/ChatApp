@@ -1,12 +1,12 @@
 import axios from "axios";
 import { useContext, useEffect, useMemo, useState } from "react";
-import User from "./User";
-import { UserContext } from "./context/UserContext";
-import { IoIosSend } from "react-icons/io";
-import { IoMdLogOut } from "react-icons/io";
-import { MdOutlineOnlinePrediction } from "react-icons/md";
-import { IoCloudOfflineSharp } from "react-icons/io5";
 import { FcExpired } from "react-icons/fc";
+import { IoIosSend, IoMdLogOut } from "react-icons/io";
+import { IoCloudOfflineSharp } from "react-icons/io5";
+import { MdOutlineDarkMode, MdOutlineOnlinePrediction } from "react-icons/md";
+import User from "./User";
+import { ThemeContext } from "./context/ThemeContext";
+import { UserContext } from "./context/UserContext";
 import { getTimeAndDate } from "./utils";
 
 export default function Chat() {
@@ -20,6 +20,7 @@ export default function Chat() {
   const [selectedUsername, setSelectedUsername] = useState("");
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const { isDarkTheme, setIsDarkTheme } = useContext(ThemeContext);
 
   const uniqueMessages = useMemo(() => {
     return [...new Set(messages.map(JSON.stringify))].map(JSON.parse);
@@ -138,6 +139,10 @@ export default function Chat() {
     e.preventDefault();
     handleMessage(e);
   };
+
+  const handleToggleTheme = () => {
+      setIsDarkTheme(!isDarkTheme)
+  }
   return (
     <div className="flex flex-col md:flex-row h-screen">
       <div className="flex flex-col items-center flex-shrink-0 bg-slate-50 md:w-1/4 md:h-screen overflow-y-auto rounded-md shadow-lg">
@@ -184,6 +189,9 @@ export default function Chat() {
             className="text-gray-500 hover:text-gray-700 focus:outline-none"
           >
             <IoMdLogOut size={25} color="black" />
+          </button>
+          <button onClick={handleToggleTheme}>
+                <MdOutlineDarkMode size={25}/>
           </button>
         </div>
       </div>
